@@ -29,10 +29,12 @@ class UpdateUserRequest(BaseModel):
     @field_validator("password")
     @classmethod
     def validate_password(cls, value):
+        if value is None:
+            return value
+
         if len(value) < 8:
             raise ValueError("Password must be at least 8 characters")
         elif value in ("password", "pass1234"):
             raise ValueError("Password is too easy")
-        # elif value != cls.:
-        #     raise ValueError("Password can't be same as username")
+
         return value

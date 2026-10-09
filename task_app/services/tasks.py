@@ -1,7 +1,8 @@
-from fastapi import Depends, HTTPException
+from fastapi import Depends
 
 from repositories.tasks import TaskRepository
 from schemas.tasks import TaskIn, TaskUpdate
+
 
 class TaskService:
     def __init__(self, repository: TaskRepository = Depends()):
@@ -14,18 +15,39 @@ class TaskService:
             raw_task.completed,
         )
 
-        return {"success": True, **task}
+        return {
+            "success": True,
+            "id": task.id,
+            "title": task.title,
+            "priority": task.priority,
+            "completed": task.completed,
+        }
 
     def get_all_tasks(self):
         tasks = self.repository.get_all_tasks()
 
-        return tasks
+        result = {}
+        for task in tasks:
+            result[task.id] = {
+                "id": task.id,
+                "title": task.title,
+                "priority": task.priority,
+                "completed": task.completed,
+            }
+
+        return result
 
     def get_task_by_id(self, task_id: int):
         task = self.repository.get_task_by_id(task_id)
 
         if task:
-            return {"success": True, **task}
+            return {
+                "success": True,
+                "id": task.id,
+                "title": task.title,
+                "priority": task.priority,
+                "completed": task.completed,
+            }
         else:
             return {"success": False, "message": "Task not found."}
 
@@ -36,7 +58,13 @@ class TaskService:
             upd_data = upd_data.model_dump()
             task = self.repository.update_task(task_id, upd_data)
 
-            return {"success": True, **task}
+            return {
+                "success": True,
+                "id": task.id,
+                "title": task.title,
+                "priority": task.priority,
+                "completed": task.completed,
+            }
 
     def delete_task(self, task_id: int):
         if not self.repository.get_task_by_id(task_id):
@@ -44,7 +72,4 @@ class TaskService:
         else:
             self.repository.delete_task(task_id)
 
-            return {
-                "success": True,
-                "message": "Task was deleted.",
-            }
+            return {"success": True, "message": "Task was deleted."}
